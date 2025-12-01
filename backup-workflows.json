@@ -1,0 +1,1400 @@
+{
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1088,
+        -16
+      ],
+      "id": "fa7e5ccf-393e-412c-8ec1-927f7f82443c",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "filters": {
+          "activeWorkflows": true
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.n8n",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        -16
+      ],
+      "id": "d90a8ab0-d8fc-47aa-8d37-2f971ec94d70",
+      "name": "Get many workflows",
+      "credentials": {
+        "n8nApi": {
+          "id": "VE6vkhszsPYslR7X",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4f5edec4-d5d8-4e6f-bb1d-f36f3be9376d",
+              "name": "folerName",
+              "value": "=backup-{{ $now.format('yyyy-MM-dd-hh-mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -848,
+        -16
+      ],
+      "id": "fc1b4bba-af67-4986-a38c-4b37c81a8789",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -336,
+        -16
+      ],
+      "id": "2d0c844e-998b-4cd5-b957-53ee59ce2fad",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a246f914-c81d-4c63-8e59-57baa65e3ca6",
+              "name": "nodes",
+              "value": "={{JSON.stringify($json, null, 2)}}",
+              "type": "string"
+            },
+            {
+              "id": "52a85d16-e758-4430-a656-61b154882045",
+              "name": "fileName",
+              "value": "={{ $json.name }}.json",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        0
+      ],
+      "id": "43cf88fe-c8a6-4a00-a0f2-a434aa9a4951",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "nodes",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        0
+      ],
+      "id": "83b7b80e-0de4-40ba-bbab-ad48a5c5f681",
+      "name": "Convert to File"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "nphaseinc",
+          "mode": "list",
+          "cachedResultName": "nphaseinc",
+          "cachedResultUrl": "https://github.com/nphaseinc"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "https://github.com/nphaseinc/kubernetes",
+          "mode": "url"
+        },
+        "filePath": "=n8n-backup/{{ $('Edit Fields').item.json.folerName }}/{{ $('Edit Fields1').item.json.fileName }}",
+        "binaryData": true,
+        "commitMessage": "={{ $now.setZone('UTC').format('yyyy-MM-dd-HH:mm') }} - Backup Completed"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        368,
+        0
+      ],
+      "id": "e1d64066-e6bf-425a-99f6-08db4e2da2c0",
+      "name": "Create a file",
+      "webhookId": "a2922345-65a5-4ab1-991b-bd2b705c2c2f",
+      "credentials": {
+        "githubApi": {
+          "id": "xXVb8wEo47fwrW3J",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1diaQAjaqcgPcXNgPtM69CKgs8sPfQQ0G3Pj6GBn0nX0",
+          "mode": "list",
+          "cachedResultName": "n8n-backup-error",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1diaQAjaqcgPcXNgPtM69CKgs8sPfQQ0G3Pj6GBn0nX0/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1diaQAjaqcgPcXNgPtM69CKgs8sPfQQ0G3Pj6GBn0nX0/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "errorTime": "={{ $('Schedule Trigger').item.json.timestamp }}",
+            "fileName": "={{ $('Edit Fields1').item.json.fileName }}",
+            "folderName": "={{ $('Edit Fields').item.json.folerName }}",
+            "message": "={{ $json.error }}"
+          },
+          "matchingColumns": [
+            "errorTime"
+          ],
+          "schema": [
+            {
+              "id": "errorTime",
+              "displayName": "errorTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fileName",
+              "displayName": "fileName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "folderName",
+              "displayName": "folderName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        576,
+        96
+      ],
+      "id": "f705ff79-4894-4b81-9d64-5ff5d0fda354",
+      "name": "Append or update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "8yJCLFnZjZMiNnUq",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many workflows": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Get many workflows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "Convert to File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert to File": {
+      "main": [
+        [
+          {
+            "node": "Create a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create a file": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Append or update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "Get many workflows": [
+      {
+        "createdAt": "2025-10-22T12:38:19.944Z",
+        "updatedAt": "2025-10-25T08:35:55.350Z",
+        "id": "FueHvihnEwBWEIBw",
+        "name": "AI alerts throubleshooter",
+        "active": true,
+        "isArchived": false,
+        "nodes": [
+          {
+            "parameters": {
+              "command": "openssl rand -base64 32 | tr -dc A-Za-z0-9 | head -c 20"
+            },
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+              -1120,
+              -480
+            ],
+            "id": "6533cfa4-8505-4a57-be45-8ffec92fc627",
+            "name": "Gen Random string"
+          },
+          {
+            "parameters": {
+              "model": {
+                "__rl": true,
+                "value": "gpt-4o",
+                "mode": "list",
+                "cachedResultName": "gpt-4o"
+              },
+              "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [
+              144,
+              -80
+            ],
+            "id": "4788afe6-529f-41a7-a837-5755303cfb15",
+            "name": "OpenAI Chat Model1",
+            "credentials": {
+              "openAiApi": {
+                "id": "QAMyLIOWftkC2rni",
+                "name": "OpenAi account"
+              }
+            }
+          },
+          {
+            "parameters": {
+              "contextWindowLength": 20
+            },
+            "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+            "typeVersion": 1.3,
+            "position": [
+              288,
+              80
+            ],
+            "id": "1bfea66b-39eb-4f41-ab34-e5cd68e20681",
+            "name": "Simple Memory"
+          },
+          {
+            "parameters": {
+              "assignments": {
+                "assignments": [
+                  {
+                    "id": "aaf49c22-f713-457f-be84-d4b968a8acfb",
+                    "name": "Messages",
+                    "value": "={{ $json.attachments[0].text }}",
+                    "type": "string"
+                  },
+                  {
+                    "id": "f2a06aa5-c141-43a0-ab9f-c9e916397772",
+                    "name": "sessionId",
+                    "value": "={{ $json.stdout }}",
+                    "type": "string"
+                  },
+                  {
+                    "id": "c8d27177-a5b5-4e9e-9303-65ff42bf17bc",
+                    "name": "ts",
+                    "value": "={{ $json.event_ts }}",
+                    "type": "string"
+                  },
+                  {
+                    "id": "707ee08c-021f-4878-b299-aefb816483b5",
+                    "name": "channel",
+                    "value": "={{ $json.channel }}",
+                    "type": "string"
+                  }
+                ]
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+              -544,
+              -288
+            ],
+            "id": "d9ed599e-0407-4dae-84c6-1c234301fb83",
+            "name": "Select required fields"
+          },
+          {
+            "parameters": {
+              "trigger": [
+                "message"
+              ],
+              "channelId": {
+                "__rl": true,
+                "value": "C09F77Z0CMB",
+                "mode": "id"
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.slackTrigger",
+            "typeVersion": 1,
+            "position": [
+              -1296,
+              -336
+            ],
+            "id": "f40b286e-63ef-4271-a094-3baa49b9616b",
+            "name": "Slack Trigger",
+            "webhookId": "8aa9c839-9a96-40fd-adee-7a2aa32473f6",
+            "credentials": {
+              "slackApi": {
+                "id": "uhTJsMqTP8T3rhcE",
+                "name": "Slack account"
+              }
+            }
+          },
+          {
+            "parameters": {
+              "mode": "combine",
+              "combineBy": "combineByPosition",
+              "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+              -992,
+              -288
+            ],
+            "id": "9e6bd260-fadc-4281-98c8-73bfeef1f101",
+            "name": "Merge"
+          },
+          {
+            "parameters": {
+              "modelName": "models/gemini-pro-latest",
+              "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+            "typeVersion": 1,
+            "position": [
+              208,
+              0
+            ],
+            "id": "b70b47fc-8712-4335-939d-4a000f9bf9af",
+            "name": "Google Gemini Chat Model",
+            "credentials": {
+              "googlePalmApi": {
+                "id": "wfNx5oHH1AwOv8Lp",
+                "name": "Google Gemini(PaLM) Api account"
+              }
+            }
+          },
+          {
+            "parameters": {
+              "jsonSchemaExample": "{\n  \"description\": \"<summary>\",\n  \"command\": \"command to run\",\n  \"cluster\": \"the name of the cluster where the issue is happening\",\n  \"namespace\": \"the name of the namespace where the problematic pod runs\",\n  \"controllerType\": \"the type of the controller of the problematic pod\",\n  \"requiresExecution\": \"true if the command should be executed against the cluster, false otherwise\",\n  \"requiresApproval\": \"boolean value, true if the command requires approval\"\n}",
+              "autoFix": true
+            },
+            "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+            "typeVersion": 1.3,
+            "position": [
+              512,
+              -32
+            ],
+            "id": "ec3ff290-ab46-436d-a596-2d184b3cf410",
+            "name": "Structured Output Parser"
+          },
+          {
+            "parameters": {
+              "model": {
+                "__rl": true,
+                "value": "gpt-5-mini",
+                "mode": "list",
+                "cachedResultName": "gpt-5-mini"
+              },
+              "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+            "typeVersion": 1.2,
+            "position": [
+              688,
+              208
+            ],
+            "id": "7cd36e43-d450-46a5-b3ba-de4633f79f11",
+            "name": "OpenAI Chat Model",
+            "credentials": {
+              "openAiApi": {
+                "id": "QAMyLIOWftkC2rni",
+                "name": "OpenAi account"
+              }
+            }
+          },
+          {
+            "parameters": {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dc4b349f-ef5e-4aa1-bb3a-61860d45866a",
+                    "leftValue": "={{ $json.Messages }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "notEmpty",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+              -352,
+              -288
+            ],
+            "id": "806a05a1-385f-408d-93d2-f3bfeaf44d56",
+            "name": "check messages"
+          },
+          {
+            "parameters": {
+              "promptType": "define",
+              "text": "=You are a Kubernetes SRE AI assistant that diagnoses and investigates Alertmanager alerts with LIVE cluster access.\n\n🔥 NEW CAPABILITY: You can now EXECUTE kubectl commands against the live EKS cluster to diagnose issues in real-time!\n\nSTEP 1 - PARSE THE INPUT:\nThe input has fields containing alert data.\nExtract these exact fields:\n- alertname: {{ $json.alertname }}\n- cluster: {{ $json.cluster }}\n- namespace: {{ $json.namespace }}\n- controller/deployment/pod/statefulset: {{ $json.controller }}\n- Any other relevant context fields\n\nSTEP 2 - IDENTIFY THE ISSUE:\nBased on the alertname, determine what diagnostic commands will provide the most useful information.\n\nTo connect to the kubernetes cluster:\n1. Use the AWS MCP to get the kubeconfig for the cluster\n2. Use the k8s MCP for all kubernetes-related tasks\n\nALERT TYPE → RECOMMENDED INVESTIGATION:\n- KubernetesDeploymentReplicasMismatch → Check deployment status, pod status, and recent events\n- KubernetesPodRestarting → Describe pod for events, get previous logs, check container status\n- CrashLoopBackOff → Get pod logs, describe pod for events, check container status\n- PodPending → Check pod describe output, node resources, pending events\n- ImagePullBackOff → Describe pod to see image pull errors, check image name\n- PodNotReady → Check pod status, logs, and readiness probe failures\n- HighMemory/HighCPU → Check current resource usage and limits\n\nSTEP 3 - GENERATE AND EXECUTE DIAGNOSTIC COMMANDS:\nCreate kubectl commands using the EXACT values from the alert data.\n- For read-only diagnostic commands (get, describe, logs, top): set requiresApproval=false\n- For modification commands (scale, delete, patch, apply): set requiresApproval=true\n\nSTEP 4 - EXECUTE COMMANDS:\nTry to execute the commands. If successful, analyze the output and continue investigation.\n\nSTEP 5 - HANDLE FAILURES OR NO APPROVAL:\nIf commands fail due to permissions, credentials, or approval was declined:\n- Set requiresExecution=false\n- Put ALL diagnostic kubectl commands in the \"command\" field as a CODE BLOCK\n- Each command on a separate line\n- Wrap with triple backticks (```)\n- Put a summary of what happened and what the commands would check in the \"description\" field\n- DO NOT include AWS commands in the command field\n\nCRITICAL OUTPUT RULES:\n1. The \"command\" field MUST be formatted as a code block with triple backticks\n2. Each kubectl command must be on its own line within the code block\n3. The \"description\" field should explain what happened and what the commands would diagnose\n4. requiresExecution and requiresApproval must be boolean values (true/false), NOT strings\n\nOUTPUT FORMAT (strict JSON):\n{\n  \"description\": \"Brief summary of the investigation attempt and what the commands check\",\n  \"command\": \"```\\nkubectl command1 --flags\\nkubectl command2 --flags\\nkubectl command3 --flags\\n```\",\n  \"cluster\": \"<exact cluster name from alert>\",\n  \"namespace\": \"<exact namespace from alert>\",\n  \"controllerType\": \"<Deployment|StatefulSet|DaemonSet|Pod|Service|Node>\",\n  \"requiresExecution\": false,\n  \"requiresApproval\": false\n}\n\nEXAMPLE OUTPUT FOR FAILED EXECUTION:\n{\n  \"description\": \"Unable to execute commands due to permission errors. Commands would check pod events, conditions, and previous logs to identify restart causes.\",\n  \"command\": \"```\\nkubectl describe pod debug-pod-123 --namespace default\\nkubectl logs debug-pod-123 --previous --tail=100 --namespace default\\nkubectl get events --namespace default --field-selector involvedObject.name=debug-pod-123\\n```\",\n  \"cluster\": \"rccdevga-nv-eks\",\n  \"namespace\": \"default\",\n  \"controllerType\": \"Pod\",\n  \"requiresExecution\": false,\n  \"requiresApproval\": false\n}\n\nEXAMPLE OUTPUT FOR SUCCESSFUL EXECUTION:\n{\n  \"description\": \"Successfully retrieved pod details showing OOMKilled status. Pod is restarting due to memory limits being exceeded.\",\n  \"command\": \"```\\nkubectl describe pod app-pod-456 --namespace production\\n```\",\n  \"cluster\": \"prod-eks-cluster\",\n  \"namespace\": \"production\",\n  \"controllerType\": \"Pod\",\n  \"requiresExecution\": true,\n  \"requiresApproval\": false\n}\n\nKEY POINTS:\n✅ Always format the command field as a code block with ``` before and after\n✅ Each command on its own line within the code block\n✅ Keep descriptions concise and focused on the diagnostic purpose\n✅ Use boolean values for requiresExecution and requiresApproval\n✅ Never include AWS commands in the final output\n\nNOW: Parse the input alert data and investigate the issue!",
+              "hasOutputParser": true,
+              "needsFallback": true,
+              "options": {
+                "maxIterations": 20
+              }
+            },
+            "type": "@n8n/n8n-nodes-langchain.agent",
+            "typeVersion": 2.2,
+            "position": [
+              160,
+              -288
+            ],
+            "id": "1e2817e6-7b88-4e35-b298-6b4f4181fa67",
+            "name": "AI Agent",
+            "alwaysOutputData": true,
+            "retryOnFail": true,
+            "notesInFlow": true
+          },
+          {
+            "parameters": {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "522b0ff7-7975-45e0-8c87-1293b6aa31d4",
+                    "leftValue": "={{ $json.attachments[0].text }}",
+                    "rightValue": "stack': 'eks',",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.if",
+            "typeVersion": 2.2,
+            "position": [
+              -800,
+              -288
+            ],
+            "id": "b15c4226-c875-4fdc-8d20-43d76b1be0c6",
+            "name": "If"
+          },
+          {
+            "parameters": {
+              "jsCode": "// In n8n Code node\nconst input = $input.all()[0].json;\nconst messagesStr = input.Messages;\n\n// Parse the Python dict-like string to JSON\nconst messagesObj = JSON.parse(messagesStr.replace(/'/g, '\"'));\n\nreturn {\n  json: {\n    alertname: messagesObj.alertname,\n    cluster: messagesObj.cluster,\n    controller: messagesObj.deployment || messagesObj.pod || messagesObj.statefulset || 'unknown',\n    namespace: messagesObj.namespace,\n    severity: messagesObj.severity,\n    source: messagesObj.source,\n    sessionId: input.sessionId,\n    ts: input.ts,\n    channel: input.channel\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+              -112,
+              -288
+            ],
+            "id": "7693c4d2-62a6-4ba0-9390-a11857cd0386",
+            "name": "Code in JavaScript"
+          },
+          {
+            "parameters": {
+              "command": "=# Configure AWS CLI to use the EKS cluster\n# Set AWS region based on cluster name (adjust as needed)\nREGION=\"us-east-1\"  # Change this based on your cluster region mapping\nCLUSTER_NAME=\"{{ $json.output.cluster }}\"\n\n# Update kubeconfig for the EKS cluster\naws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME --kubeconfig /tmp/kubeconfig-$CLUSTER_NAME\n\nif [ $? -eq 0 ]; then\n  echo \"Successfully configured kubeconfig for cluster: $CLUSTER_NAME\"\n  export KUBECONFIG=/tmp/kubeconfig-$CLUSTER_NAME\nelse\n  echo \"Failed to configure kubeconfig for cluster: $CLUSTER_NAME\"\n  exit 1\nfi"
+            },
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+              1168,
+              -272
+            ],
+            "id": "a9473f8d-bcf4-439c-a1e4-ba0eb34c1d26",
+            "name": "Get EKS Kubeconfig"
+          },
+          {
+            "parameters": {
+              "command": "=# Execute kubectl command with the configured kubeconfig\nCLUSTER_NAME=\"{{ $json.cluster }}\"\nexport KUBECONFIG=/tmp/kubeconfig-$CLUSTER_NAME\n\n# Execute the command from AI Agent\n{{ $json.command }}\n\n# Capture exit code\nEXIT_CODE=$?\n\nif [ $EXIT_CODE -ne 0 ]; then\n  echo \"Command execution failed with exit code: $EXIT_CODE\"\n  exit $EXIT_CODE\nfi"
+            },
+            "type": "n8n-nodes-base.executeCommand",
+            "typeVersion": 1,
+            "position": [
+              1312,
+              -272
+            ],
+            "id": "21b68792-64c8-4b24-8930-790820b1cd3b",
+            "name": "Execute kubectl Command"
+          },
+          {
+            "parameters": {
+              "jsCode": "// Format the kubectl output for Slack\nconst items = $input.all();\nconst aiOutput = items[0].json;\nconst kubectlResult = items[1].json;\n\n// Extract information\nconst cluster = aiOutput.cluster;\nconst namespace = aiOutput.namespace;\nconst command = aiOutput.command;\nconst description = aiOutput.description;\nconst stdout = kubectlResult.stdout || '';\nconst stderr = kubectlResult.stderr || '';\nconst exitCode = kubectlResult.exitCode || 0;\n\n// Create formatted message\nlet message = `🔍 *Kubernetes Diagnostic Results*\\n\\n`;\nmessage += `*Cluster:* ${cluster}\\n`;\nmessage += `*Namespace:* ${namespace}\\n`;\nmessage += `*Description:* ${description}\\n\\n`;\nmessage += `*Command Executed:*\\n\\`\\`\\`\\n${command}\\n\\`\\`\\`\\n\\n`;\n\nif (exitCode === 0) {\n  message += `✅ *Command successful*\\n\\n`;\n  message += `*Output:*\\n\\`\\`\\`\\n${stdout.substring(0, 2000)}${stdout.length > 2000 ? '...\\n(output truncated)' : ''}\\n\\`\\`\\`\\n`;\n} else {\n  message += `❌ *Command failed with exit code ${exitCode}*\\n\\n`;\n  message += `*Error:*\\n\\`\\`\\`\\n${stderr}\\n\\`\\`\\`\\n`;\n}\n\nreturn {\n  json: {\n    message: message,\n    cluster: cluster,\n    namespace: namespace,\n    command: command,\n    exitCode: exitCode,\n    stdout: stdout,\n    stderr: stderr,\n    channel: items[0].json.channel || aiOutput.channel,\n    threadTs: items[0].json.ts || aiOutput.ts\n  }\n};"
+            },
+            "type": "n8n-nodes-base.code",
+            "typeVersion": 2,
+            "position": [
+              1872,
+              -528
+            ],
+            "id": "5a2a53bf-8a19-4acb-bc5b-49e9c38e3c33",
+            "name": "Format kubectl Output"
+          },
+          {
+            "parameters": {
+              "select": "channel",
+              "channelId": {
+                "__rl": true,
+                "value": "={{ $node[\"Code in JavaScript\"].json[\"channel\"] }}",
+                "mode": "id"
+              },
+              "text": "={{ $json.message }}",
+              "otherOptions": {}
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.2,
+            "position": [
+              2064,
+              -528
+            ],
+            "id": "e57e262b-ac03-4ea3-acc9-9e89f0168ed6",
+            "name": "Send Slack Response",
+            "webhookId": "53639639-602d-4bcd-87ee-bd24c44d5afb",
+            "credentials": {
+              "slackApi": {
+                "id": "uhTJsMqTP8T3rhcE",
+                "name": "Slack account"
+              }
+            }
+          },
+          {
+            "parameters": {
+              "operation": "sendAndWait",
+              "select": "channel",
+              "channelId": {
+                "__rl": true,
+                "value": "={{$node[\"check messages\"].json[\"channel\"]}}",
+                "mode": "id"
+              },
+              "message": "=Do I have the approval for running the following command on cluster {{ $json.output.cluster }} and namespace: {{ $json.output.namespace }}?\n\n `{{ $json.output.command }}`",
+              "approvalOptions": {
+                "values": {
+                  "approvalType": "double"
+                }
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.2,
+            "position": [
+              624,
+              -624
+            ],
+            "id": "b6b41ad1-e046-42b0-837e-89049a0c2343",
+            "name": "Send Approval Required Message",
+            "webhookId": "ae4292e6-f63f-4a67-8fc9-550377138aa3",
+            "credentials": {
+              "slackApi": {
+                "id": "uhTJsMqTP8T3rhcE",
+                "name": "Slack account"
+              }
+            }
+          },
+          {
+            "parameters": {
+              "mode": "combine",
+              "combineBy": "combineByPosition",
+              "options": {}
+            },
+            "type": "n8n-nodes-base.merge",
+            "typeVersion": 3.2,
+            "position": [
+              1696,
+              -528
+            ],
+            "id": "3b2a6319-1c09-4093-84e7-dfc5de45beba",
+            "name": "Merge AI and kubectl Results"
+          },
+          {
+            "parameters": {
+              "rules": {
+                "values": [
+                  {
+                    "conditions": {
+                      "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                      },
+                      "conditions": [
+                        {
+                          "id": "951f0e1f-c950-42cd-8012-98f9fe09a790",
+                          "leftValue": "={{ $json.output.requiresApproval }}",
+                          "rightValue": "true",
+                          "operator": {
+                            "type": "string",
+                            "operation": "equals",
+                            "name": "filter.operator.equals"
+                          }
+                        }
+                      ],
+                      "combinator": "and"
+                    },
+                    "renameOutput": true,
+                    "outputKey": "needApproval"
+                  },
+                  {
+                    "conditions": {
+                      "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                      },
+                      "conditions": [
+                        {
+                          "leftValue": "={{ $json.output.requiresExecution }}",
+                          "rightValue": "true",
+                          "operator": {
+                            "type": "string",
+                            "operation": "equals"
+                          },
+                          "id": "0f85926a-9142-4803-b2b1-e5ce74d9c71b"
+                        }
+                      ],
+                      "combinator": "and"
+                    },
+                    "renameOutput": true,
+                    "outputKey": "needExecution"
+                  },
+                  {
+                    "conditions": {
+                      "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                      },
+                      "conditions": [
+                        {
+                          "id": "1a219739-8ceb-4c5d-906b-ccceacb59a55",
+                          "leftValue": "={{ $json.output.requiresExecution }}",
+                          "rightValue": "false",
+                          "operator": {
+                            "type": "string",
+                            "operation": "equals",
+                            "name": "filter.operator.equals"
+                          }
+                        }
+                      ],
+                      "combinator": "and"
+                    },
+                    "renameOutput": true,
+                    "outputKey": "noExecution"
+                  },
+                  {
+                    "conditions": {
+                      "options": {
+                        "caseSensitive": true,
+                        "leftValue": "",
+                        "typeValidation": "strict",
+                        "version": 2
+                      },
+                      "conditions": [
+                        {
+                          "id": "c660472e-5e18-4dee-94a7-eb87d144ed36",
+                          "leftValue": "={{ $json.output.requiresApproval }}",
+                          "rightValue": "false",
+                          "operator": {
+                            "type": "string",
+                            "operation": "equals",
+                            "name": "filter.operator.equals"
+                          }
+                        }
+                      ],
+                      "combinator": "and"
+                    },
+                    "renameOutput": true,
+                    "outputKey": "noNeedApproval"
+                  }
+                ]
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.switch",
+            "typeVersion": 3.3,
+            "position": [
+              720,
+              -288
+            ],
+            "id": "915dc8d1-c8f6-4f6c-8ab0-1b57aef90bed",
+            "name": "Switch"
+          },
+          {
+            "parameters": {
+              "assignments": {
+                "assignments": [
+                  {
+                    "id": "265a3714-8b1f-40e3-85a2-41db914b151d",
+                    "name": "sessionId",
+                    "value": "={{ $node['check messages'].json.sessionId }}",
+                    "type": "string"
+                  },
+                  {
+                    "id": "4f2a637a-6128-4e99-8c03-2c272d72c7bf",
+                    "name": "data.approved",
+                    "value": "={{ $json.data.approved }}",
+                    "type": "boolean"
+                  }
+                ]
+              },
+              "options": {}
+            },
+            "type": "n8n-nodes-base.set",
+            "typeVersion": 3.4,
+            "position": [
+              800,
+              -624
+            ],
+            "id": "33baf4db-8cf2-494b-8dbe-68628fe0be6e",
+            "name": "Edit Fields"
+          },
+          {
+            "parameters": {
+              "endpointUrl": "http://mcp-aws-cli-mcp-proxy.automation.svc.cluster.local:8080/sse",
+              "serverTransport": "sse",
+              "options": {
+                "timeout": 60000
+              }
+            },
+            "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+            "typeVersion": 1.2,
+            "position": [
+              464,
+              240
+            ],
+            "id": "df23e914-d50c-4acd-b788-711985d4737d",
+            "name": "AWS MCP"
+          },
+          {
+            "parameters": {
+              "endpointUrl": "http://mcp-kubernetes-proxy.automation.svc.cluster.local:8080/sse",
+              "serverTransport": "sse",
+              "options": {}
+            },
+            "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+            "typeVersion": 1.2,
+            "position": [
+              336,
+              256
+            ],
+            "id": "20e02089-4a7a-4dd9-a72c-b273ff85b820",
+            "name": "k8s MCP",
+            "notesInFlow": true
+          },
+          {
+            "parameters": {
+              "select": "channel",
+              "channelId": {
+                "__rl": true,
+                "value": "={{ $('check messages').item.json.channel }}",
+                "mode": "id"
+              },
+              "text": "=The problem is : {{$json.output.description}}\nTo start troubleshooting you need to run the following commands on the cluster:\n\n```\n{{$json.output.command}}\n```",
+              "otherOptions": {
+                "includeLinkToWorkflow": false,
+                "thread_ts": {
+                  "replyValues": {
+                    "thread_ts": "={{ $('check messages').item.json.ts }}"
+                  }
+                }
+              }
+            },
+            "type": "n8n-nodes-base.slack",
+            "typeVersion": 2.3,
+            "position": [
+              976,
+              -112
+            ],
+            "id": "951c635c-f6c7-441d-9735-af7cc7dc65ed",
+            "name": "Send a message",
+            "webhookId": "e8c866f1-6e5e-4c2a-a21a-00bfb8b95083",
+            "credentials": {
+              "slackApi": {
+                "id": "uhTJsMqTP8T3rhcE",
+                "name": "Slack account"
+              }
+            }
+          }
+        ],
+        "connections": {
+          "Gen Random string": {
+            "main": [
+              [
+                {
+                  "node": "Merge",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "OpenAI Chat Model1": {
+            "ai_languageModel": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "ai_languageModel",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Simple Memory": {
+            "ai_memory": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "ai_memory",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Select required fields": {
+            "main": [
+              [
+                {
+                  "node": "check messages",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Slack Trigger": {
+            "main": [
+              [
+                {
+                  "node": "Gen Random string",
+                  "type": "main",
+                  "index": 0
+                },
+                {
+                  "node": "Merge",
+                  "type": "main",
+                  "index": 1
+                }
+              ]
+            ]
+          },
+          "Merge": {
+            "main": [
+              [
+                {
+                  "node": "If",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Google Gemini Chat Model": {
+            "ai_languageModel": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "ai_languageModel",
+                  "index": 1
+                }
+              ]
+            ]
+          },
+          "Structured Output Parser": {
+            "ai_outputParser": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "ai_outputParser",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "OpenAI Chat Model": {
+            "ai_languageModel": [
+              [
+                {
+                  "node": "Structured Output Parser",
+                  "type": "ai_languageModel",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "check messages": {
+            "main": [
+              [
+                {
+                  "node": "Code in JavaScript",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "AI Agent": {
+            "main": [
+              [
+                {
+                  "node": "Switch",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "If": {
+            "main": [
+              [
+                {
+                  "node": "Select required fields",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Code in JavaScript": {
+            "main": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Get EKS Kubeconfig": {
+            "main": [
+              [
+                {
+                  "node": "Execute kubectl Command",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Execute kubectl Command": {
+            "main": [
+              [
+                {
+                  "node": "Merge AI and kubectl Results",
+                  "type": "main",
+                  "index": 1
+                }
+              ]
+            ]
+          },
+          "Merge AI and kubectl Results": {
+            "main": [
+              [
+                {
+                  "node": "Format kubectl Output",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Format kubectl Output": {
+            "main": [
+              [
+                {
+                  "node": "Send Slack Response",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Send Approval Required Message": {
+            "main": [
+              [
+                {
+                  "node": "Edit Fields",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Switch": {
+            "main": [
+              [
+                {
+                  "node": "Send Approval Required Message",
+                  "type": "main",
+                  "index": 0
+                }
+              ],
+              [
+                {
+                  "node": "Merge AI and kubectl Results",
+                  "type": "main",
+                  "index": 0
+                },
+                {
+                  "node": "Get EKS Kubeconfig",
+                  "type": "main",
+                  "index": 0
+                }
+              ],
+              [
+                {
+                  "node": "Send a message",
+                  "type": "main",
+                  "index": 0
+                }
+              ],
+              [
+                {
+                  "node": "Send a message",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "Edit Fields": {
+            "main": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "main",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "AWS MCP": {
+            "ai_tool": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "ai_tool",
+                  "index": 0
+                }
+              ]
+            ]
+          },
+          "k8s MCP": {
+            "ai_tool": [
+              [
+                {
+                  "node": "AI Agent",
+                  "type": "ai_tool",
+                  "index": 0
+                }
+              ]
+            ]
+          }
+        },
+        "settings": {
+          "executionOrder": "v1",
+          "timezone": "Etc/UTC",
+          "callerPolicy": "workflowsFromSameOwner",
+          "availableInMCP": false,
+          "errorWorkflow": "FueHvihnEwBWEIBw"
+        },
+        "staticData": {
+          "node:Schedule Trigger": {
+            "recurrenceRules": []
+          }
+        },
+        "meta": {
+          "templateCredsSetupCompleted": true
+        },
+        "pinData": {
+          "Slack Trigger": [
+            {
+              "json": {
+                "type": "message",
+                "subtype": "bot_message",
+                "text": ":bangbang: [ rccdevga-nv-eks / default ] Kubernetes Pods debug-combined-pods-957ccdd66-jjsw7 restart more than 2 times in the last 5 minutes cluster: *rccdevga-nv-eks*\\nnamespace: *default*\\npod: *debug-combined-pods-957ccdd66-jjsw7*\\n<https://grafana-nv.redcapcloud.com/d/kubernetes-essentials-pods?var-metrics=beta0722n9r0gc&amp;var-cluster=rccdevga-nv-eks&amp;var-namespace=default&amp;var-pod=debug-combined-pods-957ccdd66-jjsw7&amp;>\\n\n Explore in Grafana button View Alert button Report Issue button",
+                "username": "RCC-Alertmanager",
+                "attachments": [
+                  {
+                    "id": 1,
+                    "color": "a30200",
+                    "fallback": "{'alertname': 'KubernetesPodRestarting', 'cluster': 'rccdevga-nv-eks', 'namespace': 'default', 'pod': 'debug-combined-pods-957ccdd66-jjsw7', 'send_to': 'devops', 'severity': 'warning', 'stack': 'eks', 'tenant': 'nPhase'}",
+                    "text": "{'alertname': 'KubernetesPodRestarting', 'cluster': 'rccdevga-nv-eks', 'namespace': 'default', 'pod': 'debug-combined-pods-957ccdd66-jjsw7', 'send_to': 'devops', 'severity': 'warning', 'stack': 'eks', 'tenant': 'nPhase'}"
+                  }
+                ],
+                "ts": "1761345533.933829",
+                "bot_id": "B013H4HT6UF",
+                "blocks": [
+                  {
+                    "type": "header",
+                    "block_id": "HnCvW",
+                    "text": {
+                      "type": "plain_text",
+                      "text": ":bangbang: [ rccdevga-nv-eks / default ] Kubernetes Pods debug-combined-pods-957ccdd66-jjsw7 restart more than 2 times in the last 5 minutes",
+                      "emoji": true
+                    }
+                  },
+                  {
+                    "type": "divider",
+                    "block_id": "T+kGu"
+                  },
+                  {
+                    "type": "section",
+                    "block_id": "pfEAL",
+                    "text": {
+                      "type": "mrkdwn",
+                      "text": "cluster: *rccdevga-nv-eks*\\nnamespace: *default*\\npod: *debug-combined-pods-957ccdd66-jjsw7*\\n<https://grafana-nv.redcapcloud.com/d/kubernetes-essentials-pods?var-metrics=beta0722n9r0gc&amp;var-cluster=rccdevga-nv-eks&amp;var-namespace=default&amp;var-pod=debug-combined-pods-957ccdd66-jjsw7&amp;>\\n\n",
+                      "verbatim": false
+                    }
+                  },
+                  {
+                    "type": "actions",
+                    "block_id": "irMrF",
+                    "elements": [
+                      {
+                        "type": "button",
+                        "action_id": "P1efX",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "Explore in Grafana",
+                          "emoji": true
+                        },
+                        "url": "https://grafana-nv.redcapcloud.com/explore?schemaVersion=1&panes=%7B%22dny%22:%7B%22datasource%22:%22beta0722n9r0gc%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22sum+by+%28cluster%2C+namespace%2C+pod%29+%28%5Cn++increase%28%5Cn++++kube_pod_container_status_restarts_total%5B5m%5D%5Cn++%29%5Cn%29+%3E+2%5Cn%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22beta0722n9r0gc%22%7D,%22editorMode%22:%22code%22,%22legendFormat%22:%22__auto%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D%7D&orgId=1"
+                      },
+                      {
+                        "type": "button",
+                        "action_id": "tSPlI",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "View Alert",
+                          "emoji": true
+                        },
+                        "url": "https://grafana-nv.redcapcloud.com/alerting/list?search=namespace:rcc-kubernetes.microservice.yaml%20datasource:MimirRCC%20KubernetesPodRestarting"
+                      },
+                      {
+                        "type": "button",
+                        "action_id": "HlmLF",
+                        "text": {
+                          "type": "plain_text",
+                          "text": "Report Issue",
+                          "emoji": true
+                        },
+                        "url": "https://github.com/nphaseinc/grafana-prometheus/issues/new?title=🪲Bug:[tower:0.0.43]-KubernetesPodRestarting&template=bug_report.md"
+                      }
+                    ]
+                  }
+                ],
+                "channel": "C09F77Z0CMB",
+                "event_ts": "1761345533.933829",
+                "channel_type": "group"
+              }
+            }
+          ],
+          "AI Agent": [
+            {
+              "json": {
+                "output": {
+                  "description": "Unable to run kubectl because AWS credentials are missing and kubeconfig could not be updated. The following diagnostic commands will describe the pod, fetch the previous logs to identify restart causes, and list related events.",
+                  "command": "kubectl describe pod debug-combined-pods-957ccdd66-jjsw7 --namespace default\nkubectl logs debug-combined-pods-957ccdd66-jjsw7 --namespace default --previous\nkubectl get events --namespace default --field-selector involvedObject.name=debug-combined-pods-957ccdd66-jjsw7",
+                  "cluster": "rccdevga-nv-eks",
+                  "namespace": "default",
+                  "controllerType": "Pod",
+                  "requiresExecution": "false",
+                  "requiresApproval": "false"
+                }
+              }
+            }
+          ]
+        },
+        "versionId": "11a7cb5e-fd39-4532-acc9-39da426916eb",
+        "triggerCount": 1,
+        "shared": [
+          {
+            "createdAt": "2025-10-22T12:38:19.944Z",
+            "updatedAt": "2025-10-22T12:38:19.944Z",
+            "role": "workflow:owner",
+            "workflowId": "FueHvihnEwBWEIBw",
+            "projectId": "ZHghyTBP6IWHRYBx"
+          }
+        ],
+        "tags": []
+      }
+    ],
+    "Edit Fields": [
+      {
+        "folerName": "backup-2025-10-27-12-08"
+      }
+    ],
+    "Edit Fields1": [
+      {
+        "nodes": "{\n  \"createdAt\": \"2025-10-22T12:38:19.944Z\",\n  \"updatedAt\": \"2025-10-25T08:35:55.350Z\",\n  \"id\": \"FueHvihnEwBWEIBw\",\n  \"name\": \"AI alerts throubleshooter\",\n  \"active\": true,\n  \"isArchived\": false,\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"command\": \"openssl rand -base64 32 | tr -dc A-Za-z0-9 | head -c 20\"\n      },\n      \"type\": \"n8n-nodes-base.executeCommand\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -1120,\n        -480\n      ],\n      \"id\": \"6533cfa4-8505-4a57-be45-8ffec92fc627\",\n      \"name\": \"Gen Random string\"\n    },\n    {\n      \"parameters\": {\n        \"model\": {\n          \"__rl\": true,\n          \"value\": \"gpt-4o\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"gpt-4o\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.lmChatOpenAi\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        144,\n        -80\n      ],\n      \"id\": \"4788afe6-529f-41a7-a837-5755303cfb15\",\n      \"name\": \"OpenAI Chat Model1\",\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"QAMyLIOWftkC2rni\",\n          \"name\": \"OpenAi account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"contextWindowLength\": 20\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.memoryBufferWindow\",\n      \"typeVersion\": 1.3,\n      \"position\": [\n        288,\n        80\n      ],\n      \"id\": \"1bfea66b-39eb-4f41-ab34-e5cd68e20681\",\n      \"name\": \"Simple Memory\"\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"aaf49c22-f713-457f-be84-d4b968a8acfb\",\n              \"name\": \"Messages\",\n              \"value\": \"={{ $json.attachments[0].text }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"f2a06aa5-c141-43a0-ab9f-c9e916397772\",\n              \"name\": \"sessionId\",\n              \"value\": \"={{ $json.stdout }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"c8d27177-a5b5-4e9e-9303-65ff42bf17bc\",\n              \"name\": \"ts\",\n              \"value\": \"={{ $json.event_ts }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"707ee08c-021f-4878-b299-aefb816483b5\",\n              \"name\": \"channel\",\n              \"value\": \"={{ $json.channel }}\",\n              \"type\": \"string\"\n            }\n          ]\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 3.4,\n      \"position\": [\n        -544,\n        -288\n      ],\n      \"id\": \"d9ed599e-0407-4dae-84c6-1c234301fb83\",\n      \"name\": \"Select required fields\"\n    },\n    {\n      \"parameters\": {\n        \"trigger\": [\n          \"message\"\n        ],\n        \"channelId\": {\n          \"__rl\": true,\n          \"value\": \"C09F77Z0CMB\",\n          \"mode\": \"id\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.slackTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [\n        -1296,\n        -336\n      ],\n      \"id\": \"f40b286e-63ef-4271-a094-3baa49b9616b\",\n      \"name\": \"Slack Trigger\",\n      \"webhookId\": \"8aa9c839-9a96-40fd-adee-7a2aa32473f6\",\n      \"credentials\": {\n        \"slackApi\": {\n          \"id\": \"uhTJsMqTP8T3rhcE\",\n          \"name\": \"Slack account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"mode\": \"combine\",\n        \"combineBy\": \"combineByPosition\",\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.merge\",\n      \"typeVersion\": 3.2,\n      \"position\": [\n        -992,\n        -288\n      ],\n      \"id\": \"9e6bd260-fadc-4281-98c8-73bfeef1f101\",\n      \"name\": \"Merge\"\n    },\n    {\n      \"parameters\": {\n        \"modelName\": \"models/gemini-pro-latest\",\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.lmChatGoogleGemini\",\n      \"typeVersion\": 1,\n      \"position\": [\n        208,\n        0\n      ],\n      \"id\": \"b70b47fc-8712-4335-939d-4a000f9bf9af\",\n      \"name\": \"Google Gemini Chat Model\",\n      \"credentials\": {\n        \"googlePalmApi\": {\n          \"id\": \"wfNx5oHH1AwOv8Lp\",\n          \"name\": \"Google Gemini(PaLM) Api account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"jsonSchemaExample\": \"{\\n  \\\"description\\\": \\\"<summary>\\\",\\n  \\\"command\\\": \\\"command to run\\\",\\n  \\\"cluster\\\": \\\"the name of the cluster where the issue is happening\\\",\\n  \\\"namespace\\\": \\\"the name of the namespace where the problematic pod runs\\\",\\n  \\\"controllerType\\\": \\\"the type of the controller of the problematic pod\\\",\\n  \\\"requiresExecution\\\": \\\"true if the command should be executed against the cluster, false otherwise\\\",\\n  \\\"requiresApproval\\\": \\\"boolean value, true if the command requires approval\\\"\\n}\",\n        \"autoFix\": true\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.outputParserStructured\",\n      \"typeVersion\": 1.3,\n      \"position\": [\n        512,\n        -32\n      ],\n      \"id\": \"ec3ff290-ab46-436d-a596-2d184b3cf410\",\n      \"name\": \"Structured Output Parser\"\n    },\n    {\n      \"parameters\": {\n        \"model\": {\n          \"__rl\": true,\n          \"value\": \"gpt-5-mini\",\n          \"mode\": \"list\",\n          \"cachedResultName\": \"gpt-5-mini\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.lmChatOpenAi\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        688,\n        208\n      ],\n      \"id\": \"7cd36e43-d450-46a5-b3ba-de4633f79f11\",\n      \"name\": \"OpenAI Chat Model\",\n      \"credentials\": {\n        \"openAiApi\": {\n          \"id\": \"QAMyLIOWftkC2rni\",\n          \"name\": \"OpenAi account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\",\n            \"version\": 2\n          },\n          \"conditions\": [\n            {\n              \"id\": \"dc4b349f-ef5e-4aa1-bb3a-61860d45866a\",\n              \"leftValue\": \"={{ $json.Messages }}\",\n              \"rightValue\": \"\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"notEmpty\",\n                \"singleValue\": true\n              }\n            }\n          ],\n          \"combinator\": \"and\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        -352,\n        -288\n      ],\n      \"id\": \"806a05a1-385f-408d-93d2-f3bfeaf44d56\",\n      \"name\": \"check messages\"\n    },\n    {\n      \"parameters\": {\n        \"promptType\": \"define\",\n        \"text\": \"=You are a Kubernetes SRE AI assistant that diagnoses and investigates Alertmanager alerts with LIVE cluster access.\\n\\n🔥 NEW CAPABILITY: You can now EXECUTE kubectl commands against the live EKS cluster to diagnose issues in real-time!\\n\\nSTEP 1 - PARSE THE INPUT:\\nThe input has fields containing alert data.\\nExtract these exact fields:\\n- alertname: {{ $json.alertname }}\\n- cluster: {{ $json.cluster }}\\n- namespace: {{ $json.namespace }}\\n- controller/deployment/pod/statefulset: {{ $json.controller }}\\n- Any other relevant context fields\\n\\nSTEP 2 - IDENTIFY THE ISSUE:\\nBased on the alertname, determine what diagnostic commands will provide the most useful information.\\n\\nTo connect to the kubernetes cluster:\\n1. Use the AWS MCP to get the kubeconfig for the cluster\\n2. Use the k8s MCP for all kubernetes-related tasks\\n\\nALERT TYPE → RECOMMENDED INVESTIGATION:\\n- KubernetesDeploymentReplicasMismatch → Check deployment status, pod status, and recent events\\n- KubernetesPodRestarting → Describe pod for events, get previous logs, check container status\\n- CrashLoopBackOff → Get pod logs, describe pod for events, check container status\\n- PodPending → Check pod describe output, node resources, pending events\\n- ImagePullBackOff → Describe pod to see image pull errors, check image name\\n- PodNotReady → Check pod status, logs, and readiness probe failures\\n- HighMemory/HighCPU → Check current resource usage and limits\\n\\nSTEP 3 - GENERATE AND EXECUTE DIAGNOSTIC COMMANDS:\\nCreate kubectl commands using the EXACT values from the alert data.\\n- For read-only diagnostic commands (get, describe, logs, top): set requiresApproval=false\\n- For modification commands (scale, delete, patch, apply): set requiresApproval=true\\n\\nSTEP 4 - EXECUTE COMMANDS:\\nTry to execute the commands. If successful, analyze the output and continue investigation.\\n\\nSTEP 5 - HANDLE FAILURES OR NO APPROVAL:\\nIf commands fail due to permissions, credentials, or approval was declined:\\n- Set requiresExecution=false\\n- Put ALL diagnostic kubectl commands in the \\\"command\\\" field as a CODE BLOCK\\n- Each command on a separate line\\n- Wrap with triple backticks (```)\\n- Put a summary of what happened and what the commands would check in the \\\"description\\\" field\\n- DO NOT include AWS commands in the command field\\n\\nCRITICAL OUTPUT RULES:\\n1. The \\\"command\\\" field MUST be formatted as a code block with triple backticks\\n2. Each kubectl command must be on its own line within the code block\\n3. The \\\"description\\\" field should explain what happened and what the commands would diagnose\\n4. requiresExecution and requiresApproval must be boolean values (true/false), NOT strings\\n\\nOUTPUT FORMAT (strict JSON):\\n{\\n  \\\"description\\\": \\\"Brief summary of the investigation attempt and what the commands check\\\",\\n  \\\"command\\\": \\\"```\\\\nkubectl command1 --flags\\\\nkubectl command2 --flags\\\\nkubectl command3 --flags\\\\n```\\\",\\n  \\\"cluster\\\": \\\"<exact cluster name from alert>\\\",\\n  \\\"namespace\\\": \\\"<exact namespace from alert>\\\",\\n  \\\"controllerType\\\": \\\"<Deployment|StatefulSet|DaemonSet|Pod|Service|Node>\\\",\\n  \\\"requiresExecution\\\": false,\\n  \\\"requiresApproval\\\": false\\n}\\n\\nEXAMPLE OUTPUT FOR FAILED EXECUTION:\\n{\\n  \\\"description\\\": \\\"Unable to execute commands due to permission errors. Commands would check pod events, conditions, and previous logs to identify restart causes.\\\",\\n  \\\"command\\\": \\\"```\\\\nkubectl describe pod debug-pod-123 --namespace default\\\\nkubectl logs debug-pod-123 --previous --tail=100 --namespace default\\\\nkubectl get events --namespace default --field-selector involvedObject.name=debug-pod-123\\\\n```\\\",\\n  \\\"cluster\\\": \\\"rccdevga-nv-eks\\\",\\n  \\\"namespace\\\": \\\"default\\\",\\n  \\\"controllerType\\\": \\\"Pod\\\",\\n  \\\"requiresExecution\\\": false,\\n  \\\"requiresApproval\\\": false\\n}\\n\\nEXAMPLE OUTPUT FOR SUCCESSFUL EXECUTION:\\n{\\n  \\\"description\\\": \\\"Successfully retrieved pod details showing OOMKilled status. Pod is restarting due to memory limits being exceeded.\\\",\\n  \\\"command\\\": \\\"```\\\\nkubectl describe pod app-pod-456 --namespace production\\\\n```\\\",\\n  \\\"cluster\\\": \\\"prod-eks-cluster\\\",\\n  \\\"namespace\\\": \\\"production\\\",\\n  \\\"controllerType\\\": \\\"Pod\\\",\\n  \\\"requiresExecution\\\": true,\\n  \\\"requiresApproval\\\": false\\n}\\n\\nKEY POINTS:\\n✅ Always format the command field as a code block with ``` before and after\\n✅ Each command on its own line within the code block\\n✅ Keep descriptions concise and focused on the diagnostic purpose\\n✅ Use boolean values for requiresExecution and requiresApproval\\n✅ Never include AWS commands in the final output\\n\\nNOW: Parse the input alert data and investigate the issue!\",\n        \"hasOutputParser\": true,\n        \"needsFallback\": true,\n        \"options\": {\n          \"maxIterations\": 20\n        }\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        160,\n        -288\n      ],\n      \"id\": \"1e2817e6-7b88-4e35-b298-6b4f4181fa67\",\n      \"name\": \"AI Agent\",\n      \"alwaysOutputData\": true,\n      \"retryOnFail\": true,\n      \"notesInFlow\": true\n    },\n    {\n      \"parameters\": {\n        \"conditions\": {\n          \"options\": {\n            \"caseSensitive\": true,\n            \"leftValue\": \"\",\n            \"typeValidation\": \"strict\",\n            \"version\": 2\n          },\n          \"conditions\": [\n            {\n              \"id\": \"522b0ff7-7975-45e0-8c87-1293b6aa31d4\",\n              \"leftValue\": \"={{ $json.attachments[0].text }}\",\n              \"rightValue\": \"stack': 'eks',\",\n              \"operator\": {\n                \"type\": \"string\",\n                \"operation\": \"contains\"\n              }\n            }\n          ],\n          \"combinator\": \"and\"\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.if\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        -800,\n        -288\n      ],\n      \"id\": \"b15c4226-c875-4fdc-8d20-43d76b1be0c6\",\n      \"name\": \"If\"\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"// In n8n Code node\\nconst input = $input.all()[0].json;\\nconst messagesStr = input.Messages;\\n\\n// Parse the Python dict-like string to JSON\\nconst messagesObj = JSON.parse(messagesStr.replace(/'/g, '\\\"'));\\n\\nreturn {\\n  json: {\\n    alertname: messagesObj.alertname,\\n    cluster: messagesObj.cluster,\\n    controller: messagesObj.deployment || messagesObj.pod || messagesObj.statefulset || 'unknown',\\n    namespace: messagesObj.namespace,\\n    severity: messagesObj.severity,\\n    source: messagesObj.source,\\n    sessionId: input.sessionId,\\n    ts: input.ts,\\n    channel: input.channel\\n  }\\n};\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        -112,\n        -288\n      ],\n      \"id\": \"7693c4d2-62a6-4ba0-9390-a11857cd0386\",\n      \"name\": \"Code in JavaScript\"\n    },\n    {\n      \"parameters\": {\n        \"command\": \"=# Configure AWS CLI to use the EKS cluster\\n# Set AWS region based on cluster name (adjust as needed)\\nREGION=\\\"us-east-1\\\"  # Change this based on your cluster region mapping\\nCLUSTER_NAME=\\\"{{ $json.output.cluster }}\\\"\\n\\n# Update kubeconfig for the EKS cluster\\naws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME --kubeconfig /tmp/kubeconfig-$CLUSTER_NAME\\n\\nif [ $? -eq 0 ]; then\\n  echo \\\"Successfully configured kubeconfig for cluster: $CLUSTER_NAME\\\"\\n  export KUBECONFIG=/tmp/kubeconfig-$CLUSTER_NAME\\nelse\\n  echo \\\"Failed to configure kubeconfig for cluster: $CLUSTER_NAME\\\"\\n  exit 1\\nfi\"\n      },\n      \"type\": \"n8n-nodes-base.executeCommand\",\n      \"typeVersion\": 1,\n      \"position\": [\n        1168,\n        -272\n      ],\n      \"id\": \"a9473f8d-bcf4-439c-a1e4-ba0eb34c1d26\",\n      \"name\": \"Get EKS Kubeconfig\"\n    },\n    {\n      \"parameters\": {\n        \"command\": \"=# Execute kubectl command with the configured kubeconfig\\nCLUSTER_NAME=\\\"{{ $json.cluster }}\\\"\\nexport KUBECONFIG=/tmp/kubeconfig-$CLUSTER_NAME\\n\\n# Execute the command from AI Agent\\n{{ $json.command }}\\n\\n# Capture exit code\\nEXIT_CODE=$?\\n\\nif [ $EXIT_CODE -ne 0 ]; then\\n  echo \\\"Command execution failed with exit code: $EXIT_CODE\\\"\\n  exit $EXIT_CODE\\nfi\"\n      },\n      \"type\": \"n8n-nodes-base.executeCommand\",\n      \"typeVersion\": 1,\n      \"position\": [\n        1312,\n        -272\n      ],\n      \"id\": \"21b68792-64c8-4b24-8930-790820b1cd3b\",\n      \"name\": \"Execute kubectl Command\"\n    },\n    {\n      \"parameters\": {\n        \"jsCode\": \"// Format the kubectl output for Slack\\nconst items = $input.all();\\nconst aiOutput = items[0].json;\\nconst kubectlResult = items[1].json;\\n\\n// Extract information\\nconst cluster = aiOutput.cluster;\\nconst namespace = aiOutput.namespace;\\nconst command = aiOutput.command;\\nconst description = aiOutput.description;\\nconst stdout = kubectlResult.stdout || '';\\nconst stderr = kubectlResult.stderr || '';\\nconst exitCode = kubectlResult.exitCode || 0;\\n\\n// Create formatted message\\nlet message = `🔍 *Kubernetes Diagnostic Results*\\\\n\\\\n`;\\nmessage += `*Cluster:* ${cluster}\\\\n`;\\nmessage += `*Namespace:* ${namespace}\\\\n`;\\nmessage += `*Description:* ${description}\\\\n\\\\n`;\\nmessage += `*Command Executed:*\\\\n\\\\`\\\\`\\\\`\\\\n${command}\\\\n\\\\`\\\\`\\\\`\\\\n\\\\n`;\\n\\nif (exitCode === 0) {\\n  message += `✅ *Command successful*\\\\n\\\\n`;\\n  message += `*Output:*\\\\n\\\\`\\\\`\\\\`\\\\n${stdout.substring(0, 2000)}${stdout.length > 2000 ? '...\\\\n(output truncated)' : ''}\\\\n\\\\`\\\\`\\\\`\\\\n`;\\n} else {\\n  message += `❌ *Command failed with exit code ${exitCode}*\\\\n\\\\n`;\\n  message += `*Error:*\\\\n\\\\`\\\\`\\\\`\\\\n${stderr}\\\\n\\\\`\\\\`\\\\`\\\\n`;\\n}\\n\\nreturn {\\n  json: {\\n    message: message,\\n    cluster: cluster,\\n    namespace: namespace,\\n    command: command,\\n    exitCode: exitCode,\\n    stdout: stdout,\\n    stderr: stderr,\\n    channel: items[0].json.channel || aiOutput.channel,\\n    threadTs: items[0].json.ts || aiOutput.ts\\n  }\\n};\"\n      },\n      \"type\": \"n8n-nodes-base.code\",\n      \"typeVersion\": 2,\n      \"position\": [\n        1872,\n        -528\n      ],\n      \"id\": \"5a2a53bf-8a19-4acb-bc5b-49e9c38e3c33\",\n      \"name\": \"Format kubectl Output\"\n    },\n    {\n      \"parameters\": {\n        \"select\": \"channel\",\n        \"channelId\": {\n          \"__rl\": true,\n          \"value\": \"={{ $node[\\\"Code in JavaScript\\\"].json[\\\"channel\\\"] }}\",\n          \"mode\": \"id\"\n        },\n        \"text\": \"={{ $json.message }}\",\n        \"otherOptions\": {}\n      },\n      \"type\": \"n8n-nodes-base.slack\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        2064,\n        -528\n      ],\n      \"id\": \"e57e262b-ac03-4ea3-acc9-9e89f0168ed6\",\n      \"name\": \"Send Slack Response\",\n      \"webhookId\": \"53639639-602d-4bcd-87ee-bd24c44d5afb\",\n      \"credentials\": {\n        \"slackApi\": {\n          \"id\": \"uhTJsMqTP8T3rhcE\",\n          \"name\": \"Slack account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"operation\": \"sendAndWait\",\n        \"select\": \"channel\",\n        \"channelId\": {\n          \"__rl\": true,\n          \"value\": \"={{$node[\\\"check messages\\\"].json[\\\"channel\\\"]}}\",\n          \"mode\": \"id\"\n        },\n        \"message\": \"=Do I have the approval for running the following command on cluster {{ $json.output.cluster }} and namespace: {{ $json.output.namespace }}?\\n\\n `{{ $json.output.command }}`\",\n        \"approvalOptions\": {\n          \"values\": {\n            \"approvalType\": \"double\"\n          }\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.slack\",\n      \"typeVersion\": 2.2,\n      \"position\": [\n        624,\n        -624\n      ],\n      \"id\": \"b6b41ad1-e046-42b0-837e-89049a0c2343\",\n      \"name\": \"Send Approval Required Message\",\n      \"webhookId\": \"ae4292e6-f63f-4a67-8fc9-550377138aa3\",\n      \"credentials\": {\n        \"slackApi\": {\n          \"id\": \"uhTJsMqTP8T3rhcE\",\n          \"name\": \"Slack account\"\n        }\n      }\n    },\n    {\n      \"parameters\": {\n        \"mode\": \"combine\",\n        \"combineBy\": \"combineByPosition\",\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.merge\",\n      \"typeVersion\": 3.2,\n      \"position\": [\n        1696,\n        -528\n      ],\n      \"id\": \"3b2a6319-1c09-4093-84e7-dfc5de45beba\",\n      \"name\": \"Merge AI and kubectl Results\"\n    },\n    {\n      \"parameters\": {\n        \"rules\": {\n          \"values\": [\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"id\": \"951f0e1f-c950-42cd-8012-98f9fe09a790\",\n                    \"leftValue\": \"={{ $json.output.requiresApproval }}\",\n                    \"rightValue\": \"true\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"equals\",\n                      \"name\": \"filter.operator.equals\"\n                    }\n                  }\n                ],\n                \"combinator\": \"and\"\n              },\n              \"renameOutput\": true,\n              \"outputKey\": \"needApproval\"\n            },\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"leftValue\": \"={{ $json.output.requiresExecution }}\",\n                    \"rightValue\": \"true\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"equals\"\n                    },\n                    \"id\": \"0f85926a-9142-4803-b2b1-e5ce74d9c71b\"\n                  }\n                ],\n                \"combinator\": \"and\"\n              },\n              \"renameOutput\": true,\n              \"outputKey\": \"needExecution\"\n            },\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"id\": \"1a219739-8ceb-4c5d-906b-ccceacb59a55\",\n                    \"leftValue\": \"={{ $json.output.requiresExecution }}\",\n                    \"rightValue\": \"false\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"equals\",\n                      \"name\": \"filter.operator.equals\"\n                    }\n                  }\n                ],\n                \"combinator\": \"and\"\n              },\n              \"renameOutput\": true,\n              \"outputKey\": \"noExecution\"\n            },\n            {\n              \"conditions\": {\n                \"options\": {\n                  \"caseSensitive\": true,\n                  \"leftValue\": \"\",\n                  \"typeValidation\": \"strict\",\n                  \"version\": 2\n                },\n                \"conditions\": [\n                  {\n                    \"id\": \"c660472e-5e18-4dee-94a7-eb87d144ed36\",\n                    \"leftValue\": \"={{ $json.output.requiresApproval }}\",\n                    \"rightValue\": \"false\",\n                    \"operator\": {\n                      \"type\": \"string\",\n                      \"operation\": \"equals\",\n                      \"name\": \"filter.operator.equals\"\n                    }\n                  }\n                ],\n                \"combinator\": \"and\"\n              },\n              \"renameOutput\": true,\n              \"outputKey\": \"noNeedApproval\"\n            }\n          ]\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.switch\",\n      \"typeVersion\": 3.3,\n      \"position\": [\n        720,\n        -288\n      ],\n      \"id\": \"915dc8d1-c8f6-4f6c-8ab0-1b57aef90bed\",\n      \"name\": \"Switch\"\n    },\n    {\n      \"parameters\": {\n        \"assignments\": {\n          \"assignments\": [\n            {\n              \"id\": \"265a3714-8b1f-40e3-85a2-41db914b151d\",\n              \"name\": \"sessionId\",\n              \"value\": \"={{ $node['check messages'].json.sessionId }}\",\n              \"type\": \"string\"\n            },\n            {\n              \"id\": \"4f2a637a-6128-4e99-8c03-2c272d72c7bf\",\n              \"name\": \"data.approved\",\n              \"value\": \"={{ $json.data.approved }}\",\n              \"type\": \"boolean\"\n            }\n          ]\n        },\n        \"options\": {}\n      },\n      \"type\": \"n8n-nodes-base.set\",\n      \"typeVersion\": 3.4,\n      \"position\": [\n        800,\n        -624\n      ],\n      \"id\": \"33baf4db-8cf2-494b-8dbe-68628fe0be6e\",\n      \"name\": \"Edit Fields\"\n    },\n    {\n      \"parameters\": {\n        \"endpointUrl\": \"http://mcp-aws-cli-mcp-proxy.automation.svc.cluster.local:8080/sse\",\n        \"serverTransport\": \"sse\",\n        \"options\": {\n          \"timeout\": 60000\n        }\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.mcpClientTool\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        464,\n        240\n      ],\n      \"id\": \"df23e914-d50c-4acd-b788-711985d4737d\",\n      \"name\": \"AWS MCP\"\n    },\n    {\n      \"parameters\": {\n        \"endpointUrl\": \"http://mcp-kubernetes-proxy.automation.svc.cluster.local:8080/sse\",\n        \"serverTransport\": \"sse\",\n        \"options\": {}\n      },\n      \"type\": \"@n8n/n8n-nodes-langchain.mcpClientTool\",\n      \"typeVersion\": 1.2,\n      \"position\": [\n        336,\n        256\n      ],\n      \"id\": \"20e02089-4a7a-4dd9-a72c-b273ff85b820\",\n      \"name\": \"k8s MCP\",\n      \"notesInFlow\": true\n    },\n    {\n      \"parameters\": {\n        \"select\": \"channel\",\n        \"channelId\": {\n          \"__rl\": true,\n          \"value\": \"={{ $('check messages').item.json.channel }}\",\n          \"mode\": \"id\"\n        },\n        \"text\": \"=The problem is : {{$json.output.description}}\\nTo start troubleshooting you need to run the following commands on the cluster:\\n\\n```\\n{{$json.output.command}}\\n```\",\n        \"otherOptions\": {\n          \"includeLinkToWorkflow\": false,\n          \"thread_ts\": {\n            \"replyValues\": {\n              \"thread_ts\": \"={{ $('check messages').item.json.ts }}\"\n            }\n          }\n        }\n      },\n      \"type\": \"n8n-nodes-base.slack\",\n      \"typeVersion\": 2.3,\n      \"position\": [\n        976,\n        -112\n      ],\n      \"id\": \"951c635c-f6c7-441d-9735-af7cc7dc65ed\",\n      \"name\": \"Send a message\",\n      \"webhookId\": \"e8c866f1-6e5e-4c2a-a21a-00bfb8b95083\",\n      \"credentials\": {\n        \"slackApi\": {\n          \"id\": \"uhTJsMqTP8T3rhcE\",\n          \"name\": \"Slack account\"\n        }\n      }\n    }\n  ],\n  \"connections\": {\n    \"Gen Random string\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Merge\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"OpenAI Chat Model1\": {\n      \"ai_languageModel\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Simple Memory\": {\n      \"ai_memory\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_memory\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Select required fields\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"check messages\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Slack Trigger\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Gen Random string\",\n            \"type\": \"main\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"Merge\",\n            \"type\": \"main\",\n            \"index\": 1\n          }\n        ]\n      ]\n    },\n    \"Merge\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"If\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Google Gemini Chat Model\": {\n      \"ai_languageModel\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 1\n          }\n        ]\n      ]\n    },\n    \"Structured Output Parser\": {\n      \"ai_outputParser\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_outputParser\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"OpenAI Chat Model\": {\n      \"ai_languageModel\": [\n        [\n          {\n            \"node\": \"Structured Output Parser\",\n            \"type\": \"ai_languageModel\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"check messages\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Code in JavaScript\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AI Agent\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Switch\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"If\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Select required fields\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Code in JavaScript\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Get EKS Kubeconfig\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Execute kubectl Command\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Execute kubectl Command\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Merge AI and kubectl Results\",\n            \"type\": \"main\",\n            \"index\": 1\n          }\n        ]\n      ]\n    },\n    \"Merge AI and kubectl Results\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Format kubectl Output\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Format kubectl Output\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Send Slack Response\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Send Approval Required Message\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Edit Fields\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Switch\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"Send Approval Required Message\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"Merge AI and kubectl Results\",\n            \"type\": \"main\",\n            \"index\": 0\n          },\n          {\n            \"node\": \"Get EKS Kubeconfig\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"Send a message\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ],\n        [\n          {\n            \"node\": \"Send a message\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"Edit Fields\": {\n      \"main\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"main\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"AWS MCP\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    },\n    \"k8s MCP\": {\n      \"ai_tool\": [\n        [\n          {\n            \"node\": \"AI Agent\",\n            \"type\": \"ai_tool\",\n            \"index\": 0\n          }\n        ]\n      ]\n    }\n  },\n  \"settings\": {\n    \"executionOrder\": \"v1\",\n    \"timezone\": \"Etc/UTC\",\n    \"callerPolicy\": \"workflowsFromSameOwner\",\n    \"availableInMCP\": false,\n    \"errorWorkflow\": \"FueHvihnEwBWEIBw\"\n  },\n  \"staticData\": {\n    \"node:Schedule Trigger\": {\n      \"recurrenceRules\": []\n    }\n  },\n  \"meta\": {\n    \"templateCredsSetupCompleted\": true\n  },\n  \"pinData\": {\n    \"Slack Trigger\": [\n      {\n        \"json\": {\n          \"type\": \"message\",\n          \"subtype\": \"bot_message\",\n          \"text\": \":bangbang: [ rccdevga-nv-eks / default ] Kubernetes Pods debug-combined-pods-957ccdd66-jjsw7 restart more than 2 times in the last 5 minutes cluster: *rccdevga-nv-eks*\\\\nnamespace: *default*\\\\npod: *debug-combined-pods-957ccdd66-jjsw7*\\\\n<https://grafana-nv.redcapcloud.com/d/kubernetes-essentials-pods?var-metrics=beta0722n9r0gc&amp;var-cluster=rccdevga-nv-eks&amp;var-namespace=default&amp;var-pod=debug-combined-pods-957ccdd66-jjsw7&amp;>\\\\n\\n Explore in Grafana button View Alert button Report Issue button\",\n          \"username\": \"RCC-Alertmanager\",\n          \"attachments\": [\n            {\n              \"id\": 1,\n              \"color\": \"a30200\",\n              \"fallback\": \"{'alertname': 'KubernetesPodRestarting', 'cluster': 'rccdevga-nv-eks', 'namespace': 'default', 'pod': 'debug-combined-pods-957ccdd66-jjsw7', 'send_to': 'devops', 'severity': 'warning', 'stack': 'eks', 'tenant': 'nPhase'}\",\n              \"text\": \"{'alertname': 'KubernetesPodRestarting', 'cluster': 'rccdevga-nv-eks', 'namespace': 'default', 'pod': 'debug-combined-pods-957ccdd66-jjsw7', 'send_to': 'devops', 'severity': 'warning', 'stack': 'eks', 'tenant': 'nPhase'}\"\n            }\n          ],\n          \"ts\": \"1761345533.933829\",\n          \"bot_id\": \"B013H4HT6UF\",\n          \"blocks\": [\n            {\n              \"type\": \"header\",\n              \"block_id\": \"HnCvW\",\n              \"text\": {\n                \"type\": \"plain_text\",\n                \"text\": \":bangbang: [ rccdevga-nv-eks / default ] Kubernetes Pods debug-combined-pods-957ccdd66-jjsw7 restart more than 2 times in the last 5 minutes\",\n                \"emoji\": true\n              }\n            },\n            {\n              \"type\": \"divider\",\n              \"block_id\": \"T+kGu\"\n            },\n            {\n              \"type\": \"section\",\n              \"block_id\": \"pfEAL\",\n              \"text\": {\n                \"type\": \"mrkdwn\",\n                \"text\": \"cluster: *rccdevga-nv-eks*\\\\nnamespace: *default*\\\\npod: *debug-combined-pods-957ccdd66-jjsw7*\\\\n<https://grafana-nv.redcapcloud.com/d/kubernetes-essentials-pods?var-metrics=beta0722n9r0gc&amp;var-cluster=rccdevga-nv-eks&amp;var-namespace=default&amp;var-pod=debug-combined-pods-957ccdd66-jjsw7&amp;>\\\\n\\n\",\n                \"verbatim\": false\n              }\n            },\n            {\n              \"type\": \"actions\",\n              \"block_id\": \"irMrF\",\n              \"elements\": [\n                {\n                  \"type\": \"button\",\n                  \"action_id\": \"P1efX\",\n                  \"text\": {\n                    \"type\": \"plain_text\",\n                    \"text\": \"Explore in Grafana\",\n                    \"emoji\": true\n                  },\n                  \"url\": \"https://grafana-nv.redcapcloud.com/explore?schemaVersion=1&panes=%7B%22dny%22:%7B%22datasource%22:%22beta0722n9r0gc%22,%22queries%22:%5B%7B%22refId%22:%22A%22,%22expr%22:%22sum+by+%28cluster%2C+namespace%2C+pod%29+%28%5Cn++increase%28%5Cn++++kube_pod_container_status_restarts_total%5B5m%5D%5Cn++%29%5Cn%29+%3E+2%5Cn%22,%22range%22:true,%22instant%22:true,%22datasource%22:%7B%22type%22:%22prometheus%22,%22uid%22:%22beta0722n9r0gc%22%7D,%22editorMode%22:%22code%22,%22legendFormat%22:%22__auto%22%7D%5D,%22range%22:%7B%22from%22:%22now-1h%22,%22to%22:%22now%22%7D%7D%7D&orgId=1\"\n                },\n                {\n                  \"type\": \"button\",\n                  \"action_id\": \"tSPlI\",\n                  \"text\": {\n                    \"type\": \"plain_text\",\n                    \"text\": \"View Alert\",\n                    \"emoji\": true\n                  },\n                  \"url\": \"https://grafana-nv.redcapcloud.com/alerting/list?search=namespace:rcc-kubernetes.microservice.yaml%20datasource:MimirRCC%20KubernetesPodRestarting\"\n                },\n                {\n                  \"type\": \"button\",\n                  \"action_id\": \"HlmLF\",\n                  \"text\": {\n                    \"type\": \"plain_text\",\n                    \"text\": \"Report Issue\",\n                    \"emoji\": true\n                  },\n                  \"url\": \"https://github.com/nphaseinc/grafana-prometheus/issues/new?title=🪲Bug:[tower:0.0.43]-KubernetesPodRestarting&template=bug_report.md\"\n                }\n              ]\n            }\n          ],\n          \"channel\": \"C09F77Z0CMB\",\n          \"event_ts\": \"1761345533.933829\",\n          \"channel_type\": \"group\"\n        }\n      }\n    ],\n    \"AI Agent\": [\n      {\n        \"json\": {\n          \"output\": {\n            \"description\": \"Unable to run kubectl because AWS credentials are missing and kubeconfig could not be updated. The following diagnostic commands will describe the pod, fetch the previous logs to identify restart causes, and list related events.\",\n            \"command\": \"kubectl describe pod debug-combined-pods-957ccdd66-jjsw7 --namespace default\\nkubectl logs debug-combined-pods-957ccdd66-jjsw7 --namespace default --previous\\nkubectl get events --namespace default --field-selector involvedObject.name=debug-combined-pods-957ccdd66-jjsw7\",\n            \"cluster\": \"rccdevga-nv-eks\",\n            \"namespace\": \"default\",\n            \"controllerType\": \"Pod\",\n            \"requiresExecution\": \"false\",\n            \"requiresApproval\": \"false\"\n          }\n        }\n      }\n    ]\n  },\n  \"versionId\": \"11a7cb5e-fd39-4532-acc9-39da426916eb\",\n  \"triggerCount\": 1,\n  \"shared\": [\n    {\n      \"createdAt\": \"2025-10-22T12:38:19.944Z\",\n      \"updatedAt\": \"2025-10-22T12:38:19.944Z\",\n      \"role\": \"workflow:owner\",\n      \"workflowId\": \"FueHvihnEwBWEIBw\",\n      \"projectId\": \"ZHghyTBP6IWHRYBx\"\n    }\n  ],\n  \"tags\": []\n}",
+        "fileName": "AI alerts throubleshooter.json"
+      }
+    ]
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d97f61288efdcb3e88641b0cb85fb170bb6e74a8b63b8676085996d6840a2862"
+  }
+}
